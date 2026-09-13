@@ -4,6 +4,7 @@ import { initializeSession } from './session';
 import { setupInterface } from './interface';
 import { THEMES } from './themes';
 import { setupMobileLayout } from './mobile';
+import { inject } from '@vercel/analytics';
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <canvas id="scene" aria-label="Illustrated vape and camera scene"></canvas>
@@ -83,3 +84,6 @@ setupMobileLayout();
 initializeSession(scene, false);
 scene.start();
 document.querySelector<HTMLButtonElement>('#start-camera')!.addEventListener('click', () => initializeSession(scene));
+
+// Initialize Vercel Web Analytics
+inject();
