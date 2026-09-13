@@ -16,7 +16,7 @@ export class CameraController {
             if (ticket !== this.generation)
                 throw new CancelledSession();
             if (error instanceof Error && error.name === 'OverconstrainedError')
-                stream = await this.request({ video: true, audio: false });
+                stream = await this.request({ video: { facingMode: { ideal: 'user' } }, audio: false });
             else
                 throw error;
         }

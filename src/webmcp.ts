@@ -3,8 +3,13 @@ interface AppActions {
         cameraOn: boolean;
         trackingReady: boolean;
         guidesVisible: boolean;
+        state: string;
+        demoActive: boolean;
+        vaporReady: boolean;
+        vaporStrength: number;
     };
     stop: () => void;
+    reset: () => void;
     setGuides: (visible: boolean) => void;
 }
 interface ModelContext {
@@ -33,6 +38,8 @@ export function registerAppTools(actions: AppActions) {
             execute: (_input: unknown) => actions.status() },
         { name: 'stop_camera', description: 'Turn off the camera and release its video stream. Returns to the introduction.', inputSchema: { type: 'object', properties: {}, additionalProperties: false }, readOnly: false,
             execute: (_input: unknown) => { actions.stop(); return actions.status(); } },
+        { name: 'reset_simulation', description: 'Return the vape to its stand and clear vapor readiness and particles. Leaves the current camera or demo session running.', inputSchema: { type: 'object', properties: {}, additionalProperties: false }, readOnly: false,
+            execute: (_input: unknown) => { actions.reset(); return actions.status(); } },
         { name: 'set_tracking_guides', description: 'Show or hide the visible hand and mouth tracking guides without changing camera access.', inputSchema: { type: 'object', properties: { visible: { type: 'boolean' } }, required: ['visible'], additionalProperties: false }, readOnly: false,
             execute: (input: unknown) => {
                 if (!input || typeof input !== 'object' || !('visible' in input) || typeof input.visible !== 'boolean' || Object.keys(input).some(key => key !== 'visible'))

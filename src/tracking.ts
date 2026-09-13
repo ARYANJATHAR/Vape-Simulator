@@ -47,7 +47,7 @@ export class Tracker {
     private lastFrame = -1;
     private lastDetection = 0;
     private turn = 0;
-    private failures = 0;
+    private failures = { hands: 0, face: 0 };
     public snapshot = emptySnapshot();
     public ready = false;
     async load(report: (label: string, percent: number) => void) {
@@ -97,13 +97,15 @@ export class Tracker {
             return;
         this.lastFrame = video.currentTime;
         this.lastDetection = time;
+        const model = this.hands && (!this.face || this.turn++ % 2 === 0) ? 'hands' : 'face';
         try {
             // Alternate models, leaving time for rendering and camera controls between detections.
-            if (this.hands && (!this.face || this.turn++ % 2 === 0)) {
+            if (model === 'hands' && this.hands) {
                 const result = this.hands.detectForVideo(video, time);
                 this.snapshot.hands = result.landmarks.map((points, index) => {
                     const side = result.handedness[index]?.[0]?.categoryName || String(index);
-                    const previous = isFresh(this.snapshot.handTime, time) ? this.snapshot.hands.find(h => h.side === side)?.points : undefined;
+                    const last = isFresh(this.snapshot.handTime, time) ? this.snapshot.hands.find(h => h.side === side)?.points : undefined;
+                    const previous = last && Math.hypot(last[0].x - points[0].x, last[0].y - points[0].y) < .18 ? last : undefined;
                     return { points: smoothPoints(previous, points), side };
                 });
                 this.snapshot.handTime = time;
@@ -114,14 +116,21 @@ export class Tracker {
                 this.snapshot.expressions = Object.fromEntries((result.faceBlendshapes[0]?.categories ?? []).map(c => [c.categoryName, c.score]));
                 this.snapshot.faceTime = time;
             }
-            this.failures = 0;
+            this.failures[model] = 0;
         }
         catch (error) {
-            this.snapshot = emptySnapshot();
-            if (++this.failures >= 5)
+            if (model === 'hands') {
+                this.snapshot.hands = [];
+                this.snapshot.handTime = 0;
+            } else {
+                this.snapshot.face = null;
+                this.snapshot.faceTime = 0;
+                this.snapshot.expressions = {};
+            }
+            if (++this.failures[model] >= 5)
                 throw error;
         }
     }
-    resetSamples() { this.snapshot = emptySnapshot(); this.lastFrame = -1; this.lastDetection = 0; }
+    resetSamples() { this.snapshot = emptySnapshot(); this.lastFrame = -1; this.lastDetection = 0; this.failures = { hands: 0, face: 0 }; }
     close() { this.disposed = true; this.abort.abort(); this.ready = false; this.hands?.close(); this.face?.close(); this.hands = null; this.face = null; this.resetSamples(); }
 }
