@@ -23,9 +23,12 @@ export interface SimulationFrame {
 
 export const DEVICE_TIP_Y = -190;
 const GRIP_ON = .58;
-const GRIP_OFF = .32;
-const RELEASE_DELAY = .18;
-const LOST_HAND_DELAY = .4;
+const RELEASE_DELAY = .45;
+const LOST_HAND_DELAY = 1.2;
+
+function openHand(hand: HandPose) {
+  return hand.open ?? hand.grip < .16;
+}
 
 export function restingDevice(width: number, height: number): DevicePose {
   const mobile = width < 760;
@@ -87,11 +90,12 @@ export class VapeSimulation {
     this.frame = this.empty(restingDevice(this.previousWidth, this.previousHeight));
   }
 
-  private release(trackingLost = false) {
+  private release() {
     this.owner = null; this.lostFor = 0; this.openFor = 0;
     this.cooldown = .45; this.frame.atMouth = false;
-    // An automatic release is recovery, not an intentional exhale.
-    if (trackingLost) { this.frame.charge = 0; this.frame.ready = false; }
+    this.frame.held = false;
+    this.frame.charge = 0; this.frame.ready = false;
+    this.frame.emission = null; this.frame.drawIntensity = 0;
   }
 
   pickUp(hand: HandPose) {
@@ -101,7 +105,7 @@ export class VapeSimulation {
   }
 
   letGo() { this.release(); this.frame.held = false; }
-  readyVapor() { this.frame.ready = true; }
+  readyVapor() { if (this.owner) this.frame.ready = true; }
 
   private findHand(hands: HandPose[], dt: number, pointerControl = false): HandPose | null {
     if (this.owner) {
@@ -109,16 +113,16 @@ export class VapeSimulation {
       // a fist turns. A remote second hand must not steal the device.
       const owner = this.owner;
       const candidates = hands
-        .filter(hand => (pointerControl && hand.side === 'pointer') || distance(hand.center, owner.center) < Math.max(65, owner.width * 1.9))
+        .filter(hand => (pointerControl && hand.side === 'pointer') || distance(hand.center, owner.center) < Math.max(100, Math.max(owner.width, hand.width) * 2.8) * (1 + Math.min(this.lostFor, .4)))
         .sort((a, b) => (distance(a.center, owner.center) + (a.side === owner.side ? 0 : 12)) - (distance(b.center, owner.center) + (b.side === owner.side ? 0 : 12)));
       const hand = candidates[0];
       if (!hand) {
         this.lostFor += dt;
-        if (this.lostFor > LOST_HAND_DELAY) this.release(true);
+        if (this.lostFor > LOST_HAND_DELAY) this.release();
         return null;
       }
       this.lostFor = 0;
-      this.openFor = hand.grip < GRIP_OFF ? this.openFor + dt : 0;
+      this.openFor = openHand(hand) ? this.openFor + dt : 0;
       if (this.openFor > RELEASE_DELAY) { this.release(); return null; }
       this.owner = { center: { ...hand.center }, width: hand.width, side: hand.side };
       return hand;
@@ -146,6 +150,9 @@ export class VapeSimulation {
     const hand = this.findHand(input.hands, dt, input.pointerControl);
     f.held = this.owner !== null;
     f.trackingLost = f.held && !hand;
+    // Hold the last pose through brief occlusion. No hand means no emission,
+    // but readiness survives recovery of the same held device. Release clears it.
+    if (hand && openHand(hand)) f.ready = false;
 
     const target = hand ? {
       ...hand.center,
@@ -172,7 +179,7 @@ export class VapeSimulation {
     const mouthRadius = face ? Math.max(17, face.width * (wasAtMouth ? .29 : .21)) : 0;
     const controlTip = hand ? devicePoint(target, 0, DEVICE_TIP_Y) : f.tip;
     // Mouth contact makes vapor ready immediately; there is no fill timer.
-    f.atMouth = !!hand && hand.grip >= GRIP_OFF && !!face && distance(controlTip, face.mouth) < mouthRadius;
+    f.atMouth = !!hand && !openHand(hand) && !!face && distance(controlTip, face.mouth) < mouthRadius;
     f.state = f.atMouth ? 'at-mouth' : f.held ? 'holding' : 'idle';
     if (f.atMouth && face) {
       f.ready = true;
@@ -186,7 +193,7 @@ export class VapeSimulation {
       // Use the fresh hand target as well as the smoothed drawing position so
       // render interpolation does not introduce an extra release delay.
       const deviceAway = !!face && distance(controlTip, face.mouth) > mouthRadius;
-      if (face && deviceAway && !f.trackingLost && f.ready) {
+      if (face && hand && !openHand(hand) && f.held && deviceAway && !f.trackingLost && f.ready) {
         const signal = exhaleSignal(face);
         if (signal) {
           f.charge = signal.strength;

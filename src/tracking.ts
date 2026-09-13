@@ -3,6 +3,7 @@ import type { Point } from './geometry';
 import { isFresh, smoothPoints } from './geometry';
 export interface TrackedHand {
     points: Point[];
+    worldPoints?: { x: number; y: number; z: number }[];
     side: string;
 }
 export interface TrackingSnapshot {
@@ -106,7 +107,7 @@ export class Tracker {
                     const side = result.handedness[index]?.[0]?.categoryName || String(index);
                     const last = isFresh(this.snapshot.handTime, time) ? this.snapshot.hands.find(h => h.side === side)?.points : undefined;
                     const previous = last && Math.hypot(last[0].x - points[0].x, last[0].y - points[0].y) < .18 ? last : undefined;
-                    return { points: smoothPoints(previous, points), side };
+                    return { points: smoothPoints(previous, points), worldPoints: result.worldLandmarks[index], side };
                 });
                 this.snapshot.handTime = time;
             }

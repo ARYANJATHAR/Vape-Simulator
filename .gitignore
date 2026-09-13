@@ -1,6 +1,41 @@
+# Dependencies and generated build output
 node_modules/
 dist/
-.env*
+.vite/
+.cache/
+*.tsbuildinfo
+
+# Local deployment state
+.vercel/
+.openai/
+
+# Local project notes; publish only the README as Markdown
+*.md
+!README.md
+
+# Environment files and local credentials
+.env
+.env.*
 !.env.example
+!.env.*.example
+*.local
+*.pem
+*.key
+
+# Logs and generated test reports
 *.log
+coverage/
+playwright-report/
+test-results/
+
+# Local editor and operating-system files
+.vscode/
+.idea/
 .DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+*~
+
+# Keep package-lock.json and public model/WASM assets tracked: Vercel needs them.

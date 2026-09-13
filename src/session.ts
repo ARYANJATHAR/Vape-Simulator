@@ -206,12 +206,16 @@ export function initializeSession(scene: Scene, startNow = true) {
     if (frame.ready) return ['STEP 3 OF 3', 'Your cloud is ready.', 'Open your mouth for a cloud. Make an O with your lips for rings. Relax your lips to pause.'];
     if (frame.held) return ['STEP 2 OF 3', 'Bring it closer.', 'Bring the mouthpiece tip to your mouth. Keep your hand closed around the device.'];
     if (!hands.length) return ['STEP 1 OF 3', 'Raise a hand.', 'Keep your hand in view, then close it around the illustrated vape.'];
-    return ['STEP 1 OF 3', 'Pick it up.', 'Close your hand around the vape inside the outline. Open your hand to let go.'];
+    return ['STEP 1 OF 3', 'Pick it up.', 'Close your hand around the body of the vape. Open your hand to let go.'];
   }
 
   scene.onSimulationFrame = (frame, time) => {
     if (!scene.active || scene.paused) return;
     document.body.classList.toggle('device-held', frame.held);
+    document.querySelectorAll<HTMLButtonElement>('[data-demo-effect]').forEach(button => {
+      button.disabled = !frame.held;
+      button.title = frame.held ? 'Release this virtual effect' : 'Pick up the vape first using To mouth or by dragging it';
+    });
     $('.vapor-status').dataset.state = frame.ready ? 'ready' : 'idle';
     if (time - lastUi < 160) return;
     lastUi = time;
@@ -266,3 +270,4 @@ export function initializeSession(scene: Scene, startNow = true) {
   });
   if (startNow) void startSession();
 }
+

@@ -103,8 +103,8 @@ export class DeviceRenderer {
     rounded(ctx, -14, -23, 28, 29, 14); ctx.fill();
     ctx.strokeStyle = '#e1edf63a'; ctx.lineWidth = .8;
     ctx.beginPath(); ctx.arc(0, -9, 11, Math.PI, Math.PI * 2); ctx.stroke();
-    ctx.font = '9px Manrope, sans-serif'; ctx.textAlign = 'center';
-    ctx.fillStyle = '#f1f5f870'; ctx.fillText('S T U D I O', 0, 53);
+    ctx.font = '9px Arial, sans-serif'; ctx.textAlign = 'center';
+    ctx.fillStyle = '#f1f5f870'; ctx.fillText('O N L I N E', 0, 53);
     ctx.fillStyle = '#0715217a'; rounded(ctx, -12, 114, 24, 6, 3); ctx.fill();
     ctx.fillStyle = '#bed2df9c'; rounded(ctx, -8, 116, 16, 2, 1); ctx.fill();
     ctx.fillStyle = '#0a131ce6'; rounded(ctx, -14, 149, 28, 9, 4); ctx.fill();
@@ -130,9 +130,23 @@ export class DeviceRenderer {
     ctx.fillStyle = gradient(ctx, reflectionX - 22, 0, reflectionX + 22, 0, [[0, '#ffffff00'], [.48, '#f1f6ff12'], [.56, '#f1f6ff20'], [1, '#ffffff00']]);
     ctx.fillRect(-64, -80, 128, 251); ctx.restore();
     if (glow > .01) {
-      ctx.fillStyle = rgba(theme.vapor, Math.min(1, .55 + glow * .45));
-      ctx.shadowColor = rgba(theme.vapor, glow); ctx.shadowBlur = 12 * pose.scale;
-      rounded(ctx, -8, 115.5, 16, 3, 1.5); ctx.fill();
+      // Contact lights the cartridge and front indicator immediately, even
+      // before the user purses their lips. Keep the spill inside the device.
+      ctx.save();
+      rounded(ctx, -51, -161, 102, 73, [15, 15, 6, 6]); ctx.clip();
+      const light = ctx.createRadialGradient(0, -105, 2, 0, -105, 60);
+      light.addColorStop(0, `rgba(245,255,249,${.95 * glow})`);
+      light.addColorStop(.45, rgba(theme.vapor, .6 * glow));
+      light.addColorStop(1, rgba(theme.vapor, 0));
+      ctx.fillStyle = light; ctx.fillRect(-53, -164, 106, 78);
+      ctx.restore();
+      // A bright front control and a larger LED remain readable at hand scale.
+      ctx.fillStyle = '#dcffe8';
+      ctx.shadowColor = '#86ffc1'; ctx.shadowBlur = Math.max(9, 24 * pose.scale);
+      ctx.beginPath(); ctx.arc(0, -9, 8, 0, Math.PI * 2); ctx.fill();
+      rounded(ctx, -12, 113, 24, 8, 4); ctx.fill();
+      ctx.shadowBlur = 0; ctx.fillStyle = '#ffffff';
+      rounded(ctx, -8, 115, 16, 3, 1.5); ctx.fill();
     }
     ctx.restore();
   }

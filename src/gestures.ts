@@ -7,6 +7,7 @@ export interface HandPose {
   axis: Point;
   width: number;
   grip: number;
+  open?: boolean;
   side: string;
 }
 
@@ -38,17 +39,35 @@ function mean(points: Point[]): Point {
   };
 }
 
-function handGrip(points: Point[]) {
-  // Distances are in screen pixels, not raw normalized coordinates, so portrait
-  // cropping cannot distort the relationship between palm and finger lengths.
+type Joint = Point & { z?: number };
+function jointDistance(a: Joint, b: Joint) {
+  return Math.hypot(a.x - b.x, a.y - b.y, (a.z ?? 0) - (b.z ?? 0));
+}
+
+function handGrip(points: Joint[]) {
+  // World landmarks keep finger curl stable when a fist turns toward the face.
+  // Screen-space points remain a fallback when 3D landmarks are unavailable.
   let total = 0;
   for (const [base, tip] of [[5, 8], [9, 12], [13, 16], [17, 20]]) {
-    const palmLength = Math.max(1, distance(points[base], points[0]));
-    const wristRatio = distance(points[tip], points[0]) / palmLength;
-    const foldRatio = distance(points[tip], points[base]) / palmLength;
+    const palmLength = Math.max(.000001, jointDistance(points[base], points[0]));
+    const wristRatio = jointDistance(points[tip], points[0]) / palmLength;
+    const foldRatio = jointDistance(points[tip], points[base]) / palmLength;
     total += clamp((1.8 - wristRatio) / .8) * .55 + clamp((1.05 - foldRatio) / .65) * .45;
   }
   return total / 4;
+}
+
+function isOpenHand(points: Joint[]) {
+  let extended = 0;
+  for (const base of [5, 9, 13, 17]) {
+    const a = points[base], joint = points[base + 1], tip = points[base + 3];
+    const u = { x: a.x - joint.x, y: a.y - joint.y, z: (a.z ?? 0) - (joint.z ?? 0) };
+    const v = { x: tip.x - joint.x, y: tip.y - joint.y, z: (tip.z ?? 0) - (joint.z ?? 0) };
+    const cosine = (u.x * v.x + u.y * v.y + u.z * v.z) / Math.max(.00000001, Math.hypot(u.x, u.y, u.z) * Math.hypot(v.x, v.y, v.z));
+    const reach = jointDistance(tip, points[0]) / Math.max(.000001, jointDistance(a, points[0]));
+    if (cosine < -.75 && reach > 1.55) extended++;
+  }
+  return extended >= 3;
 }
 
 export function interpretTracking(
@@ -69,14 +88,19 @@ export function interpretTracking(
     for (const hand of snapshot.hands) {
       if (hand.points.length < 21 || hand.points.some(p => !Number.isFinite(p.x) || !Number.isFinite(p.y))) continue;
       const points = hand.points.map(map);
-      const width = distance(points[5], points[17]);
+      const world = hand.worldPoints;
+      const joints = world?.length === 21 && world.every(p => Number.isFinite(p.x) && Number.isFinite(p.y) && Number.isFinite(p.z)) ? world : points;
+      // Palm breadth collapses in a side-on view; palm length supplies a stable
+      // lower bound so turning the hand does not discard its pose or shrink it.
+      const width = Math.max(distance(points[5], points[17]), distance(points[0], points[9]) * .65);
       if (width < 12) continue;
       const axisLength = Math.max(1, distance(points[0], points[9]));
       input.hands.push({
         center: mean([points[0], points[5], points[9], points[13], points[17]]),
         axis: { x: (points[9].x - points[0].x) / axisLength, y: (points[9].y - points[0].y) / axisLength },
         width,
-        grip: handGrip(points),
+        grip: handGrip(joints),
+        open: isOpenHand(joints),
         side: hand.side,
       });
     }

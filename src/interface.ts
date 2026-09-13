@@ -28,7 +28,7 @@ export function setupInterface(scene: Scene) {
     const theme = getTheme(id);
     scene.setTheme(theme);
     rememberTheme(theme);
-    document.documentElement.style.setProperty('--slate', theme.accent);
+    document.documentElement.style.setProperty('--device-accent', theme.accent);
     document.documentElement.style.setProperty('--theme-pale', theme.pale);
     document.querySelectorAll<HTMLElement>('[data-current-theme]').forEach(label => { label.textContent = theme.name; });
     document.querySelectorAll<HTMLButtonElement>('[data-theme]').forEach(button => {

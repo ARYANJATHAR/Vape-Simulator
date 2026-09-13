@@ -109,14 +109,14 @@ export class DemoController {
     this.pickUp();
   }
 
-  drop() { this.held = false; this.endDrag(); this.scene.simulation.letGo(); }
+  drop() { this.held = false; this.effectUntil = 0; this.endDrag(); this.scene.simulation.letGo(); }
 
   emit(kind: VaporKind) {
-    if (!this.scene.demoActive || this.scene.paused) return;
+    if (!this.scene.demoActive || this.scene.paused || !this.held) return;
     this.effect = kind;
     this.effectUntil = performance.now() + 850;
-    this.scene.simulation.readyVapor();
     this.moveAway();
+    this.scene.simulation.readyVapor();
   }
 
   input(time: number): InteractionInput {

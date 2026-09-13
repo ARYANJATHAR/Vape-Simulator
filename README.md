@@ -1,4 +1,4 @@
-# Vape Studio — phases 1–6 source implementation
+# Online Vape — Saste Nashe
 
 A camera-based simulator built with TypeScript, Vite, Canvas 2D and on-device hand/face tracking. The current source includes hand-controlled device movement, instant vapor gestures, six cosmetic themes, and a camera-free demo.
 
@@ -23,7 +23,7 @@ Open your hand to release the device. **Reset** or **R** clears readiness and pa
 
 Drag the illustrated device with a mouse or touch, or use **To mouth**, **Move away**, and **Let go**. **Cloud**, **Ring**, and **Burst** release an effect immediately; keyboard shortcuts are **1**, **2**, and **3**. **R** resets. The demo does not start the camera or load tracking models.
 
-Choose Slate, Glacier, Rose, Amber, Meadow, or Violet from the theme dialog, or select **Surprise me**. Themes change the device, backdrop, vapor color, and particle movement. Existing particles keep their original theme until they fade. The selection is saved locally when browser storage is available. Native dialogs support Escape, focus containment, and focus return; simulation input pauses while a dialog is open.
+Choose Slate, Glacier, Rose, Amber, Meadow, or Violet from the theme dialog, or select **Surprise me**. Themes change the device, vapor color, and particle movement; the interface retains its charcoal and orange identity. Existing particles keep their original theme until they fade. The selection is saved locally when browser storage is available. Native dialogs support Escape, focus containment, and focus return; simulation input pauses while a dialog is open.
 
 ## Modules
 
@@ -41,7 +41,7 @@ Choose Slate, Glacier, Rose, Amber, Meadow, or Violet from the theme dialog, or 
 
 ## Privacy
 
-No microphone, recording, frame uploads or analytics are implemented. Camera frames and landmarks stay in browser memory. Theme preference uses localStorage; adult confirmation uses sessionStorage. Model/WASM assets are served from the app. Google Fonts and the host receive ordinary resource requests. See `THIRD-PARTY-NOTICES.md` for model and runtime attribution.
+No microphone, recording, frame uploads or analytics are implemented. Camera frames and landmarks stay in browser memory. Theme preference uses localStorage; adult confirmation uses sessionStorage. Model/WASM assets are served from the app. Google Fonts and the host receive ordinary resource requests. See `THIRD-PARTY-NOTICES.txt` for model and runtime attribution.
 
 ## Validation status
 
@@ -49,6 +49,8 @@ Mobile refinements reserve measured space for controls, adapt the demo canvas to
 
 Before release, check the camera and demo on actual iPhone/Android devices in both orientations, then make a production build and deploy over HTTPS. A phone accessing a computer's plain HTTP LAN address does not get the localhost secure-context exception. No mobile checks or deployment were performed by the assistant.
 
-Creator links: [GitHub](https://github.com/ARYANJATHAR) and [LinkedIn](https://www.linkedin.com/in/aryanjathar07/), supplied by the user and displayed in the introduction footer.
+Creator links: [GitHub](https://github.com/ARYANJATHAR) and [LinkedIn](https://www.linkedin.com/in/aryanjathar07/), supplied by the user and displayed in the persistent header.
 
 This update was written and reviewed as source only. No tests, compilation, production build, browser checks, camera activation or deployment were performed, as requested. Phase 6 verification/delivery checks remain for the user; code completion does not establish runtime correctness. Earlier phase 1–2 test results do not validate this version. Previously built or published output remains unchanged until rebuilt and deployed.
+
+
