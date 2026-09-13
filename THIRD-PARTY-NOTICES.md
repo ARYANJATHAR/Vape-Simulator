@@ -1,0 +1,9 @@
+# Third-party assets
+
+- MediaPipe Tasks Vision 0.10.21: Google LLC, Apache-2.0. Runtime files in `public/vision` are copied from the installed npm package. Source and notices: https://github.com/google-ai-edge/mediapipe and https://www.npmjs.com/package/@mediapipe/tasks-vision/v/0.10.21.
+- Hand Landmarker model: https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task
+- Face Landmarker model: https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task
+- Model documentation and license information: https://ai.google.dev/edge/mediapipe/solutions/vision/hand_landmarker and https://ai.google.dev/edge/mediapipe/solutions/vision/face_landmarker.
+- Lora and Manrope font families are served by Google Fonts under their respective open font licenses.
+
+The reference website was analyzed for visual and interaction direction. Its script, stylesheet, branding and device artwork are not included in this app.
