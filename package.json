@@ -12,7 +12,8 @@
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "0.10.21",
-    "@vercel/analytics": "^2.0.1"
+    "@vercel/analytics": "^2.0.1",
+    "@vercel/speed-insights": "^2.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

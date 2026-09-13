@@ -5,6 +5,7 @@ import { setupInterface } from './interface';
 import { THEMES } from './themes';
 import { setupMobileLayout } from './mobile';
 import { inject } from '@vercel/analytics';
+import { injectSpeedInsights } from '@vercel/speed-insights';
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <canvas id="scene" aria-label="Illustrated vape and camera scene"></canvas>
@@ -87,3 +88,6 @@ document.querySelector<HTMLButtonElement>('#start-camera')!.addEventListener('cl
 
 // Initialize Vercel Web Analytics
 inject();
+
+// Initialize Vercel Speed Insights
+injectSpeedInsights();
