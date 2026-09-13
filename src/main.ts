@@ -5,6 +5,8 @@ import { initializeSession } from './session';
 import { setupInterface } from './interface';
 import { THEMES } from './themes';
 import { setupMobileLayout } from './mobile';
+import { inject } from '@vercel/analytics';
+import { injectSpeedInsights } from '@vercel/speed-insights';
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <canvas id="scene" aria-label="Illustrated vape and camera scene"></canvas>
@@ -85,5 +87,8 @@ initializeSession(scene, false);
 scene.start();
 document.querySelector<HTMLButtonElement>('#start-camera')!.addEventListener('click', () => initializeSession(scene));
 
+// Initialize Vercel Web Analytics
+inject();
 
-
+// Initialize Vercel Speed Insights
+injectSpeedInsights();
